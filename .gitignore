@@ -1,0 +1,74 @@
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Logs and data directories
+*.log
+*.sql
+*.sqlite
+
+# Application server specific directories
+/target/
+/build/
+/out/
+/dist/
+/web/WEB-INF/classes/
+/web/WEB-INF/lib/
+
+# IDE specific files
+/.classpath
+/.project
+/.settings/
+/.idea/
+*.iml
+*.iws
+
+# System files
+.DS_Store
+Thumbs.db
+
+# OS generated files
+ehthumbs.db
+Icon?
+[Tt]humbs.db
+
+# Eclipse specific
+/bin/
+/tmp/
+.metadata
+
+# Intellij specific
+/out/
+
+# VSCode specific
+.vscode/
+
+# Node modules - if using node in the project
+node_modules/
+
+# Local Tomcat configuration and server logs
+/Tomcat/
+/work/
+/logs/
+/temp/
+/webapps/
+
+# Local development specific
+/local/
+/dev/
+
+# Ignore environment specific config files
+*.local
+
+# Ignore sensitive data files
+*.key
+*.cert
+*.pem
+*.der
+*.pfx
+*.crt
+
