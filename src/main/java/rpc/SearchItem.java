@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import entity.Constants;
 import entity.Item;
 import external.TicketMasterAPI;
 
@@ -37,9 +38,9 @@ public class SearchItem extends HttpServlet {
 		JSONArray array = new JSONArray();
 		
 		try {
-			double lat = Double.parseDouble(request.getParameter("lat"));
-			double lon = Double.parseDouble(request.getParameter("lon"));
-			String keyword = request.getParameter("term");
+			double lat = Double.parseDouble(request.getParameter(Constants.LATITUDE));
+			double lon = Double.parseDouble(request.getParameter(Constants.LONGTITUDE));
+			String keyword = request.getParameter(Constants.KEYWORD);
 			
 			List<Item> items = TicketMasterAPI.search(lat, lon, keyword);
 			

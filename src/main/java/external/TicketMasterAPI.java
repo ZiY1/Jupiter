@@ -13,14 +13,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import entity.Constants;
 import entity.Item;
 import entity.Item.ItemBuilder;
 
 public class TicketMasterAPI {
-	private static final String URL = "https://app.ticketmaster.com/discovery/v2/events.json";
-	private static final String DEFAULT_KEYWORD = ""; // no restriction
-	private static final String DEFAULT_QUERY_RADIUS = "50";
-	private static final String API_KEY = "A76y8ioHzsApuCvysyQQS6ZYzmft3Z6o";
 	
 	/**
 	 * Helper methods
@@ -52,45 +49,45 @@ public class TicketMasterAPI {
 	private static String getAddress(JSONObject event) throws JSONException {
 		String emptyAddress = "";
 		
-		if (event.isNull("_embedded")) {
+		if (event.isNull(Constants.EMBEDDED)) {
 			return emptyAddress;
 		}
 		
-		JSONObject embedded = event.getJSONObject("_embedded");
+		JSONObject embedded = event.getJSONObject(Constants.EMBEDDED);
 		
-		if (embedded.isNull("venues")) {
+		if (embedded.isNull(Constants.VENUES)) {
 			return emptyAddress;
 		}
 		
-		JSONArray venues = embedded.getJSONArray("venues");
+		JSONArray venues = embedded.getJSONArray(Constants.VENUES);
 		
 		for (int i = 0; i < venues.length(); i++) {
 			JSONObject venue = venues.getJSONObject(i);
 					
 			StringBuilder addressBuilder = new StringBuilder();
 			
-			if (!venue.isNull("address")) {
-				JSONObject address = venue.getJSONObject("address");
+			if (!venue.isNull(Constants.ADDRESS)) {
+				JSONObject address = venue.getJSONObject(Constants.ADDRESS);
 				
-				if (!address.isNull("line1")) {
-					addressBuilder.append(address.getString("line1"));
+				if (!address.isNull(Constants.LINE1)) {
+					addressBuilder.append(address.getString(Constants.LINE1));
 				}
-				if (!address.isNull("line2")) {
+				if (!address.isNull(Constants.LINE2)) {
 					addressBuilder.append(" ");
-					addressBuilder.append(address.getString("line2"));
+					addressBuilder.append(address.getString(Constants.LINE2));
 				}
-				if (!address.isNull("line3")) {
+				if (!address.isNull(Constants.LINE3)) {
 					addressBuilder.append(" ");
-					addressBuilder.append(address.getString("line3"));
+					addressBuilder.append(address.getString(Constants.LINE3));
 				}
 			}
 			
-			if (!venue.isNull("city")) {
-				JSONObject city = venue.getJSONObject("city");
+			if (!venue.isNull(Constants.CITY)) {
+				JSONObject city = venue.getJSONObject(Constants.CITY);
 				
-				if (!city.isNull("name")) {
+				if (!city.isNull(Constants.NAME)) {
 					addressBuilder.append(" ");
-					addressBuilder.append(city.getString("name"));
+					addressBuilder.append(city.getString(Constants.NAME));
 				}
 			}
 			
@@ -107,17 +104,17 @@ public class TicketMasterAPI {
 	private static String getImageUrl(JSONObject event) throws JSONException {
 		String emptyImageUrl = "";
 		
-		if (event.isNull("images")) {
+		if (event.isNull(Constants.IMAGES)) {
 			return emptyImageUrl;
 		}
 		
-		JSONArray images = event.getJSONArray("images");
+		JSONArray images = event.getJSONArray(Constants.IMAGES);
 		
 		for (int i = 0; i < images.length(); i++) {
 			JSONObject image = images.getJSONObject(i);
 			
-			if (!image.isNull("url")) {
-				return image.getString("url");
+			if (!image.isNull(Constants.URL)) {
+				return image.getString(Constants.URL);
 			}
 		}
 		
@@ -128,23 +125,23 @@ public class TicketMasterAPI {
 	private static Set<String> getCategories(JSONObject event) throws JSONException {
 		Set<String> categories = new HashSet<>();
 		
-		if (event.isNull("classifications")) {
+		if (event.isNull(Constants.CLASSIFICATIONS)) {
 			return categories;
 		}
 		
-		JSONArray classifications = event.getJSONArray("classifications");
+		JSONArray classifications = event.getJSONArray(Constants.CLASSIFICATIONS);
 		
 		for (int i = 0; i < classifications.length(); i++) {
 			JSONObject classification = classifications.getJSONObject(i);
 			
-			if (classification.isNull("segment")) {
+			if (classification.isNull(Constants.SEGMENT)) {
 				continue;
 			}
 			
-			JSONObject segment = classification.getJSONObject("segment");
+			JSONObject segment = classification.getJSONObject(Constants.SEGMENT);
 			
-			if (!segment.isNull("name")) {
-				categories.add(segment.getString("name"));
+			if (!segment.isNull(Constants.NAME)) {
+				categories.add(segment.getString(Constants.NAME));
 			}
 		}
 		
@@ -159,24 +156,24 @@ public class TicketMasterAPI {
 			
 			ItemBuilder builder = new ItemBuilder();
 			
-			if (!event.isNull("name")) {
-				builder.setName(event.getString("name"));
+			if (!event.isNull(Constants.NAME)) {
+				builder.setName(event.getString(Constants.NAME));
 			}
 			
-			if (!event.isNull("id")) {
-				builder.setItemId(event.getString("id"));
+			if (!event.isNull(Constants.ID)) {
+				builder.setItemId(event.getString(Constants.ID));
 			}
 			
-			if (!event.isNull("url")) {
-				builder.setUrl(event.getString("url"));
+			if (!event.isNull(Constants.URL)) {
+				builder.setUrl(event.getString(Constants.URL));
 			}
 			
-			if (!event.isNull("rating")) {
-				builder.setRating(event.getDouble("rating"));
+			if (!event.isNull(Constants.RATING)) {
+				builder.setRating(event.getDouble(Constants.RATING));
 			}
 			
-			if (!event.isNull("distance")) {
-				builder.setDistance(event.getDouble("distance"));
+			if (!event.isNull(Constants.DISTANCE)) {
+				builder.setDistance(event.getDouble(Constants.DISTANCE));
 			}
 			
 			builder.setCategories(getCategories(event));
@@ -193,7 +190,7 @@ public class TicketMasterAPI {
     	List<Item> searchResult = new ArrayList<>();
     	
         if (keyword == null) {
-        	keyword = DEFAULT_KEYWORD;
+        	keyword = Constants.DEFAULT_KEYWORD;
         }
         
         try {
@@ -204,16 +201,16 @@ public class TicketMasterAPI {
         
         String geoHash = GeoHash.encodeGeohash(lat, lon, 8);
         
-        String query = String.format("apikey=%s&geoPoint=%s&keyword=%s&radius=%s", 
-        		API_KEY, geoHash, keyword, DEFAULT_QUERY_RADIUS);
+        String query = String.format(Constants.DEFAULT_QUERY, 
+        		Constants.API_KEY, geoHash, keyword, Constants.DEFAULT_QUERY_RADIUS);
         
         HttpURLConnection connection = null;
         try {
-        	connection = (HttpURLConnection) new URL(URL + "?" + query).openConnection();
+        	connection = (HttpURLConnection) new URL(Constants.TICKET_MASTER_URL + "?" + query).openConnection();
         	connection.setRequestMethod("GET");
         	int responseCode = connection.getResponseCode();
         	
-        	System.out.println("\nSending 'GET' request to URL: " + URL + "?" + query);
+        	System.out.println("\nSending 'GET' request to URL: " + Constants.TICKET_MASTER_URL + "?" + query);
         	System.out.println("Response code: " + responseCode);
         	
         	if (responseCode != 200) {
@@ -229,12 +226,12 @@ public class TicketMasterAPI {
             	}
             	
             	JSONObject obj = new JSONObject(response.toString());
-            	if (obj.isNull("_embedded")) {
+            	if (obj.isNull(Constants.EMBEDDED)) {
             		throw new Exception();
             	}
             	
-            	JSONObject embedded = obj.getJSONObject("_embedded");
-            	JSONArray events = embedded.getJSONArray("events");
+            	JSONObject embedded = obj.getJSONObject(Constants.EMBEDDED);
+            	JSONArray events = embedded.getJSONArray(Constants.EVENTS);
             	
             	searchResult = getItemList(events);
         	}
