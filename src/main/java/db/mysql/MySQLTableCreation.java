@@ -46,6 +46,7 @@ public class MySQLTableCreation {
 					+ "rating FLOAT,"
 					+ "address VARCHAR(255),"
 					+ "image_url VARCHAR(255),"
+					+ "url VARCHAR(255),"
 					+ "distance FLOAT,"
 					+ "PRIMARY KEY (item_id))";
 			stmt.executeUpdate(sql);
@@ -74,12 +75,12 @@ public class MySQLTableCreation {
 					+ "FOREIGN KEY (item_id) REFERENCES items(item_id))";
 			stmt.executeUpdate(sql);
 			
-//			 Step 4 insert data for testing
-//			 Create a fake user
-//			sql = "INSERT INTO users VALUES ("
-//					+ "'1111', '3229c1097c00d497a0fd282d586be050', 'John', 'Smith')";
-//			System.out.println("Executing query: " + sql);
-//			stmt.executeUpdate(sql);
+			// Step 4 insert data for testing
+			// Create a fake user
+			 sql = "INSERT INTO users VALUES ("
+			 		+ "'23741962', '3229c1097c00d497a0fd282d586be050', 'John', 'Smith')";
+			 System.out.println("Executing query: " + sql);
+			 stmt.executeUpdate(sql);
 			
 			System.out.println("Import is done successfully.");
 		} catch (Exception e) {
