@@ -3,12 +3,15 @@ package db.mysql;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import db.DBConnection;
 import entity.Item;
+import entity.Item.ItemBuilder;
 import external.TicketMasterAPI;
 
 public class MySQLConnection implements DBConnection {
@@ -77,20 +80,91 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public Set<String> getFavoriteItemIds(String userId) {
-		// TODO Auto-generated method stub
-		return null;
+		if (conn == null) {
+			return new HashSet<>();
+		}
+		
+		Set<String> favoriteItemIds = new HashSet<>();
+		
+		try {
+			String sql = "SELECT item_id FROM history WHERE user_id = ?";
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			stmt.setString(1, userId);
+			
+			ResultSet rs = stmt.executeQuery();
+			
+			while (rs.next()) {
+				favoriteItemIds.add(rs.getString("item_id"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return favoriteItemIds;
 	}
 
 	@Override
 	public Set<Item> getFavoriteItems(String userId) {
-		// TODO Auto-generated method stub
-		return null;
+		if (conn == null) {
+			return new HashSet<>();
+		}
+		
+		Set<Item> favoriteItems = new HashSet<>();
+		Set<String> itemIds = getFavoriteItemIds(userId);
+		
+		try {
+			String sql = "SELECT * FROM items WHERE item_id = ?";
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			for (String itemId : itemIds) {
+				stmt.setString(1, itemId);
+				
+				ResultSet rs = stmt.executeQuery();
+				
+				ItemBuilder itemBuilder = new ItemBuilder();
+				
+				while (rs.next()) {
+					itemBuilder.setItemId(rs.getString("item_id"));
+					itemBuilder.setName(rs.getString("name"));
+					itemBuilder.setRating(rs.getDouble("rating"));
+					itemBuilder.setAddress(rs.getString("address"));
+					itemBuilder.setImageUrl(rs.getString("image_url"));
+					itemBuilder.setUrl(rs.getString("url"));
+					itemBuilder.setCategories(getCategories(itemId));
+					itemBuilder.setDistance(rs.getDouble("distance"));
+					
+					favoriteItems.add(itemBuilder.build());
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return favoriteItems;
 	}
 
 	@Override
 	public Set<String> getCategories(String itemId) {
-		// TODO Auto-generated method stub
-		return null;
+		if (conn == null) {
+			return new HashSet<>();
+		}
+		
+		Set<String> categories = new HashSet<>();
+		
+		try {
+			String sql = "SELECT category FROM categories WHERE item_id = ?";
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			stmt.setString(1, itemId);
+			
+			ResultSet rs = stmt.executeQuery();
+			
+			while (rs.next()) {
+				categories.add(rs.getString("category"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return categories;
 	}
 
 	@Override
