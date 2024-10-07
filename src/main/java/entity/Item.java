@@ -1,5 +1,6 @@
 package entity;
 
+import java.util.Objects;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -79,6 +80,23 @@ public class Item {
 		return obj;
 	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hash(itemId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Item other = (Item) obj;
+		return Objects.equals(itemId, other.itemId);
+	}
+
 	public static class ItemBuilder {
 		private String itemId;
 		private String name;
