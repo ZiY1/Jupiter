@@ -2,6 +2,7 @@ package rpc;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -39,16 +40,20 @@ public class SearchItem extends HttpServlet {
 		JSONArray array = new JSONArray();
 		
 		try {
+			String userId = request.getParameter("user_id");
 			double lat = Double.parseDouble(request.getParameter(Constants.LATITUDE));
 			double lon = Double.parseDouble(request.getParameter(Constants.LONGTITUDE));
 			String keyword = request.getParameter(Constants.KEYWORD);
 			
 			DBConnection connection = DBConnectionFactory.getConnection(); // default: mysql
 			List<Item> items = connection.searchItems(lat, lon, keyword);
-			connection.close();
 			
+			Set<String> favorite = connection.getFavoriteItemIds(userId);
+			connection.close();
 			for (Item item : items) {
 				JSONObject obj = item.toJSONObject();
+				
+				obj.put("favorite", favorite.contains(item.getItemId()));
 				array.put(obj);
 			}
 		} catch (Exception e) {
