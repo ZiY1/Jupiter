@@ -238,24 +238,24 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public boolean verifyLogin(String userId, String password) {
-//		if (conn == null) {
-//			return false;
-//		}
-//		
-//		try {
-//			String sql = "SELECT password FROM users WHERE user_id = ?";
-//			PreparedStatement stmt = conn.prepareStatement(sql);
-//			stmt.setString(1, userId);
-//			
-//			ResultSet rs = stmt.executeQuery();
-//			
-//			if (rs.next()) {
-//				String storedHashedPassword = rs.getString("password");
-//				return password.equals(storedHashedPassword);
-//			}
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
+		if (conn == null) {
+			return false;
+		}
+		
+		try {
+			String sql = "SELECT user_id FROM users WHERE user_id = ? and password = ?";
+			PreparedStatement stmt = conn.prepareStatement(sql);
+			stmt.setString(1, userId);
+			stmt.setString(2, password);
+			
+			ResultSet rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 		return false;
 	}
