@@ -26,6 +26,7 @@ public class GeoRecommendation {
 		Map<String, Integer> allCategories = new HashMap<>();
 		for (String favoriteItemId : favoriteItemIds) {
 			Set<String> categories = conn.getCategories(favoriteItemId);
+			System.out.println(categories.size());
 			for (String category : categories) {
 				allCategories.put(category, allCategories.getOrDefault(category, 0) + 1);
 			}

@@ -174,7 +174,6 @@ public class MySQLConnection implements DBConnection {
 			saveItem(item);
 		}
 		return items;
-
 	}
 
 	@Override

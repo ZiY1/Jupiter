@@ -45,7 +45,7 @@ public class SearchItem extends HttpServlet {
 			double lon = Double.parseDouble(request.getParameter(Constants.LONGTITUDE));
 			String keyword = request.getParameter(Constants.KEYWORD);
 			
-			DBConnection connection = DBConnectionFactory.getConnection(); // default: mysql
+			DBConnection connection = DBConnectionFactory.getConnection();
 			List<Item> items = connection.searchItems(lat, lon, keyword);
 			
 			Set<String> favorite = connection.getFavoriteItemIds(userId);
