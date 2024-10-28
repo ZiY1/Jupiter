@@ -2,7 +2,7 @@ package db.mysql;
 
 public class MySQLDBUtil {
 	private static final String HOSTNAME = "localhost";
-	private static final String PORT_NUM = "3306"; // change it to your mysql port number
+	private static final String PORT_NUM = "3306"; // change it to your mysql port number, 3306 for AWS, 8889 for MAMP
 	public static final String DB_NAME = "jupiter_db";
 	private static final String USERNAME = "root";
 	private static final String PASSWORD = "root";
