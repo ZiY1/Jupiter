@@ -153,4 +153,19 @@ public class MongoDBConnection implements DBConnection {
 		return false;
 	}
 
+	@Override
+	public boolean addUser(String userId, String password, String firstName, String lastName) {
+		FindIterable<Document> iterable = db.getCollection("users").find(Filters.eq("user_id", userId));
+		
+		if (iterable.first() != null) {
+			return false;
+		}
+		
+		db.getCollection("users").insertOne(new Document().append("user_id", userId)
+				  .append("password", password)
+				  .append("first_name", firstName)
+				  .append("last_name", lastName));
+		
+		return true;
+	}
 }
