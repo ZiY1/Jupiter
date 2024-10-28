@@ -88,5 +88,16 @@ public interface DBConnection {
 	 * @return boolean
 	 */
 	public boolean verifyLogin(String userId, String password);
+	
+	/**
+	 * Return whether the user is added successfully
+	 * 
+	 * @param userId
+	 * @param password
+	 * @param firstName
+	 * @param lastName
+	 * @return boolean
+	 */
+	public boolean addUser(String userId, String password, String firstName, String lastName);
 }
 
