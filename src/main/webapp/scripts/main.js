@@ -1,7 +1,7 @@
 (function () {
     /* step2: variables */
-    let user_id = '23741962';
-    let user_fullname = 'Ziyi Huang';
+    let user_id = '';
+    let user_fullname = '';
     let lng = -122.08;
     let lat = 37.38;
 
@@ -11,18 +11,274 @@
     /* step4: define init function */
     function init() {
         // Register event listeners
-        $('nearby-btn').addEventListener('click', loadNearbyItems);
-        $('fav-btn').addEventListener('click', loadFavoriteItems);
-        $('recommend-btn').addEventListener('click', loadRecommendedItems);
-
-
-        const welcomeMsg = $('welcome-msg');
-        welcomeMsg.innerHTML = 'Welcome, ' + user_fullname;
-
-        // step 7
-        initGeoLocation();
+        document.querySelector('#login-form-btn').addEventListener('click', onSessionInvalid);
+        document.querySelector('#login-btn').addEventListener('click', login);
+        document.querySelector('#register-form-btn').addEventListener('click', showRegisterForm);
+        document.querySelector('#register-btn').addEventListener('click', register);
+        document.querySelector('#nearby-btn').addEventListener('click', loadNearbyItems);
+        document.querySelector('#fav-btn').addEventListener('click', loadFavoriteItems);
+        document.querySelector('#recommend-btn').addEventListener('click', loadRecommendedItems);
+        validateSession();
 
     }
+
+    /**
+     * Session
+     */
+    function validateSession() {
+        onSessionInvalid();
+        // The request parameters
+        const url = './login';
+        const req = JSON.stringify({});
+
+        // display loading message
+        showLoadingMessage('Validating session...');
+
+        // make AJAX call
+        ajax('GET', url, req,
+            // session is still valid
+            function(res) {
+                const result = JSON.parse(res);
+
+                if (result.status === 'OK') {
+                    onSessionValid(result);
+                }
+            }, function(){
+                console.log('login error')
+            });
+    }
+
+    function onSessionValid(result) {
+        user_id = result.user_id;
+        user_fullname = result.name;
+
+        const loginForm = document.querySelector('#login-form');
+        const registerForm = document.querySelector('#register-form');
+        const itemNav = document.querySelector('#item-nav');
+        const itemList = document.querySelector('#item-list');
+        const avatar = document.querySelector('#avatar');
+        const welcomeMsg = document.querySelector('#welcome-msg');
+        const logoutBtn = document.querySelector('#logout-link');
+
+        welcomeMsg.innerHTML = 'Welcome, ' + user_fullname;
+
+        showElement(itemNav);
+        showElement(itemList, 'flex');
+        showElement(avatar);
+        showElement(welcomeMsg);
+        showElement(logoutBtn, 'inline-block');
+        hideElement(loginForm);
+        hideElement(registerForm);
+
+        initGeoLocation();
+    }
+
+    function onSessionInvalid() {
+        const loginForm = document.querySelector('#login-form');
+        const registerForm = document.querySelector('#register-form');
+        const itemNav = document.querySelector('#item-nav');
+        const itemList = document.querySelector('#item-list');
+        const avatar = document.querySelector('#avatar');
+        const welcomeMsg = document.querySelector('#welcome-msg');
+        const logoutBtn = document.querySelector('#logout-link');
+
+        hideElement(itemNav);
+        hideElement(itemList);
+        hideElement(avatar);
+        hideElement(logoutBtn);
+        hideElement(welcomeMsg);
+        hideElement(registerForm);
+
+        clearLoginError();
+        showElement(loginForm);
+    }
+
+    function hideElement(element) {
+        if (element) {
+            element.style.display = 'none';
+        } else {
+            console.error('Element not found:', element);
+        }
+    }
+
+    function showElement(element, style) {
+        if (element) {
+            element.style.display = style ? style : 'block';
+        } else {
+            console.error('Element not found:', element);
+        }
+    }
+
+    function showRegisterForm() {
+        const loginForm = document.querySelector('#login-form');
+        const registerForm = document.querySelector('#register-form');
+        const itemNav = document.querySelector('#item-nav');
+        const itemList = document.querySelector('#item-list');
+        const avatar = document.querySelector('#avatar');
+        const welcomeMsg = document.querySelector('#welcome-msg');
+        const logoutBtn = document.querySelector('#logout-link');
+
+        hideElement(itemNav);
+        hideElement(itemList);
+        hideElement(avatar);
+        hideElement(logoutBtn);
+        hideElement(welcomeMsg);
+        hideElement(loginForm);
+
+        clearRegisterResult();
+        showElement(registerForm);
+    }
+
+    /** step 7: initGeoLocation function **/
+    function initGeoLocation() {
+        if (navigator.geolocation) {
+            // step 8
+            navigator.geolocation.getCurrentPosition(onPositionUpdated,
+                onLoadPositionFailed, {
+                    maximumAge: 60000
+                });
+            showLoadingMessage('Retrieving your location...');
+        } else {
+            // step 9
+            onLoadPositionFailed();
+        }
+    }
+
+    /** step 8: onPositionUpdated function **/
+    function onPositionUpdated(position) {
+        lat = position.coords.latitude;
+        lng = position.coords.longitude;
+
+        // step 11
+        loadNearbyItems();
+    }
+
+    /** step 9: onPositionUpdated function **/
+    function onLoadPositionFailed() {
+        console.warn('navigator.geolocation is not available');
+
+        //step 10
+        getLocationFromIP();
+    }
+
+    /** step 10: getLocationFromIP function **/
+    function getLocationFromIP() {
+        // Get location from http://ipinfo.io/json
+        const url = 'https://ipinfo.io/json';
+        const req = null;
+        ajax('GET', url, req, function (res) {
+            const result = JSON.parse(res);
+            if ('loc' in result) {
+                const loc = result.loc.split(',');
+                lat = loc[0];
+                lng = loc[1];
+            } else {
+                console.warn('Getting location by IP failed.');
+            }
+            // step 11
+            loadNearbyItems();
+        });
+    }
+
+    // -----------------------------------
+    // Login
+    // -----------------------------------
+
+    function login() {
+        const username = document.querySelector('#username').value;
+        let password = document.querySelector('#password').value;
+        password = md5(username + md5(password));
+
+        // The request parameters
+        const url = './login';
+        const req = JSON.stringify({
+            user_id: username,
+            password: password,
+        });
+
+        ajax('POST', url, req,
+            // successful callback
+            function(res) {
+                var result = JSON.parse(res);
+
+                // successfully logged in
+                if (result.status === 'OK') {
+                    onSessionValid(result);
+                }
+            },
+
+            // error
+            function() {
+                showLoginError();
+            },
+            true);
+    }
+
+    function showLoginError() {
+        document.querySelector('#login-error').innerHTML = 'Invalid username or password';
+    }
+
+    function clearLoginError() {
+        document.querySelector('#login-error').innerHTML = '';
+    }
+
+    function register() {
+        const username = document.querySelector('#register-username').value;
+        let password = document.querySelector('#register-password').value;
+        const firstName = document.querySelector('#register-first-name').value;
+        const lastName = document.querySelector('#register-last-name').value;
+
+        if (username === "" || password === "" || firstName === "" || lastName === "") {
+            showRegisterResult('Please fill in all fields');
+            return
+        }
+
+        if (username.match(/^[a-z0-9_]+$/) === null) {
+            showRegisterResult('Invalid username');
+            return
+        }
+
+        password = md5(username + md5(password));
+
+        // The request parameters
+        const url = './register';
+        const req = JSON.stringify({
+            user_id: username,
+            password: password,
+            first_name: firstName,
+            last_name: lastName,
+        });
+
+        ajax('POST', url, req,
+            // successful callback
+            function(res) {
+                const result = JSON.parse(res);
+
+                // successfully logged in
+                if (result.status === 'OK') {
+                    showRegisterResult('Succesfully registered');
+                } else {
+                    showRegisterResult('User already existed');
+                }
+            },
+
+            // error
+            function() {
+                showRegisterResult('Failed to register');
+            },
+            true);
+    }
+
+    function showRegisterResult(registerMessage) {
+        document.querySelector('#register-result').innerHTML = registerMessage;
+    }
+
+    function clearRegisterResult() {
+        document.querySelector('#register-result').innerHTML = '';
+    }
+
+
+
 
     /* step5: create $ function */
     /**
@@ -75,57 +331,6 @@
                 "application/json;charset=utf-8");
             xhr.send(data);
         }
-    }
-
-    /** step 7: initGeoLocation function **/
-    function initGeoLocation() {
-        if (navigator.geolocation) {
-            // step 8
-            navigator.geolocation.getCurrentPosition(onPositionUpdated,
-                onLoadPositionFailed, {
-                    maximumAge: 60000
-                });
-            showLoadingMessage('Retrieving your location...');
-        } else {
-            // step 9
-            onLoadPositionFailed();
-        }
-    }
-
-    /** step 8: onPositionUpdated function **/
-    function onPositionUpdated(position) {
-        lat = position.coords.latitude;
-        lng = position.coords.longitude;
-
-        // step 11
-        loadNearbyItems();
-    }
-
-    /** step 9: onPositionUpdated function **/
-    function onLoadPositionFailed() {
-        console.warn('navigator.geolocation is not available');
-
-        //step 10
-        getLocationFromIP();
-    }
-
-    /** step 10: getLocationFromIP function **/
-    function getLocationFromIP() {
-        // Get location from http://ipinfo.io/json
-        const url = 'https://ipinfo.io/json';
-        const req = null;
-        ajax('GET', url, req, function (res) {
-            const result = JSON.parse(res);
-            if ('loc' in result) {
-                const loc = result.loc.split(',');
-                lat = loc[0];
-                lng = loc[1];
-            } else {
-                console.warn('Getting location by IP failed.');
-            }
-            // step 11
-            loadNearbyItems();
-        });
     }
 
     /** step 11: loadNearbyItems function **/
